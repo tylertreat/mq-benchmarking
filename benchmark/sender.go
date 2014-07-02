@@ -1,7 +1,7 @@
 package benchmark
 
 import (
-	"fmt"
+	"log"
 	"time"
 )
 
@@ -22,6 +22,6 @@ func (machine MessageSendingMachine) Run(messageSize int, numberToSend int) {
 
 	stop := time.Now().UnixNano()
 	ms := float32(stop-start) / 1000000
-	fmt.Printf("Sent %d messages in %f ms\n", numberToSend, ms)
-	fmt.Printf("Sent %f per second\n", 1000*float32(numberToSend)/ms)
+	log.Printf("Sent %d messages in %f ms\n", numberToSend, ms)
+	log.Printf("Sent %f per second\n", 1000*float32(numberToSend)/ms)
 }

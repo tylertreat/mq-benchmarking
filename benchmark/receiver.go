@@ -1,7 +1,7 @@
 package benchmark
 
 import (
-	"fmt"
+	"log"
 	"time"
 )
 
@@ -47,8 +47,8 @@ func (handler *MessageHandler) ReceiveMessage(message []byte) {
 		handler.stopped = time.Now().UnixNano()
 		handler.hasCompleted = true
 		ms := float32(handler.stopped-handler.started) / 1000000.0
-		fmt.Printf("Received %d messages in %f ms\n", handler.NumberOfMessages, ms)
-		fmt.Printf("Received %f per second\n", 1000*float32(handler.NumberOfMessages)/ms)
+		log.Printf("Received %d messages in %f ms\n", handler.NumberOfMessages, ms)
+		log.Printf("Received %f per second\n", 1000*float32(handler.NumberOfMessages)/ms)
 	}
 }
 
