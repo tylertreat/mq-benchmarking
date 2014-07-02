@@ -37,7 +37,6 @@ func (zeromq zeromq) Setup() {
 }
 
 func (zeromq zeromq) Teardown() {
-	//zeromq.context.Term()
 	zeromq.sender.Close()
 	zeromq.receiver.Close()
 }
