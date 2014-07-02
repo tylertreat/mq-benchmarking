@@ -1,2 +1,2 @@
-brokerless-mq-benchmarking
+mq-benchmarking
 ==========================
