@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/tylertreat/brokerless-mq-benchmarking/benchmark"
-	"github.com/tylertreat/brokerless-mq-benchmarking/benchmark/mq"
+	"github.com/tylertreat/mq-benchmarking/benchmark"
+	"github.com/tylertreat/mq-benchmarking/benchmark/mq"
 )
 
 func runInproc() {

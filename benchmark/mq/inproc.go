@@ -1,6 +1,6 @@
 package mq
 
-import "github.com/tylertreat/brokerless-mq-benchmarking/benchmark"
+import "github.com/tylertreat/mq-benchmarking/benchmark"
 
 type inproc struct {
 	handler          *benchmark.MessageHandler
