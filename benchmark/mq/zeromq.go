@@ -10,7 +10,7 @@ type zeromq struct {
 	receiver         *zmq4.Socket
 }
 
-func receive(zeromq zeromq) {
+func zeromqReceive(zeromq zeromq) {
 	for {
 		message, _ := zeromq.receiver.RecvBytes(zmq4.DONTWAIT)
 		zeromq.ReceiveMessage(message)
@@ -33,7 +33,7 @@ func NewZeromq(numberOfMessages int) zeromq {
 }
 
 func (zeromq zeromq) Setup() {
-	go receive(zeromq)
+	go zeromqReceive(zeromq)
 }
 
 func (zeromq zeromq) Teardown() {
