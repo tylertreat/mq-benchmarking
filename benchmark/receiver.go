@@ -8,6 +8,8 @@ import (
 type MessageReceiver interface {
 	ReceiveMessage([]byte)
 	MessageHandler() *MessageHandler
+	Setup()
+	Teardown()
 }
 
 type MessageReceivingMachine struct {

@@ -22,3 +22,7 @@ func (inproc inproc) ReceiveMessage(message []byte) {
 func (inproc inproc) MessageHandler() *benchmark.MessageHandler {
 	return inproc.handler
 }
+
+func (inproc inproc) Setup() {}
+
+func (inproc inproc) Teardown() {}
