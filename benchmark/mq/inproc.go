@@ -14,8 +14,8 @@ func (inproc Inproc) Send(message []byte) {
 	inproc.ReceiveMessage(message)
 }
 
-func (inproc Inproc) ReceiveMessage(message []byte) {
-	inproc.handler.ReceiveMessage(message)
+func (inproc Inproc) ReceiveMessage(message []byte) bool {
+	return inproc.handler.ReceiveMessage(message)
 }
 
 func (inproc Inproc) MessageHandler() *benchmark.MessageHandler {

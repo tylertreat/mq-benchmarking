@@ -12,7 +12,9 @@ type Zeromq struct {
 func zeromqReceive(zeromq Zeromq) {
 	for {
 		message, _ := zeromq.receiver.RecvBytes(zmq4.DONTWAIT)
-		zeromq.ReceiveMessage(message)
+		if zeromq.ReceiveMessage(message) {
+			break
+		}
 	}
 }
 
@@ -44,8 +46,8 @@ func (zeromq Zeromq) Send(message []byte) {
 	zeromq.sender.SendBytes(message, zmq4.DONTWAIT)
 }
 
-func (zeromq Zeromq) ReceiveMessage(message []byte) {
-	zeromq.handler.ReceiveMessage(message)
+func (zeromq Zeromq) ReceiveMessage(message []byte) bool {
+	return zeromq.handler.ReceiveMessage(message)
 }
 
 func (zeromq Zeromq) MessageHandler() *benchmark.MessageHandler {

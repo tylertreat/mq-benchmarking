@@ -6,7 +6,7 @@ import (
 )
 
 type MessageReceiver interface {
-	ReceiveMessage([]byte)
+	ReceiveMessage([]byte) bool
 	MessageHandler() *MessageHandler
 	Setup()
 	Teardown()
@@ -35,7 +35,7 @@ type MessageHandler struct {
 	stopped          int64
 }
 
-func (handler *MessageHandler) ReceiveMessage(message []byte) {
+func (handler *MessageHandler) ReceiveMessage(message []byte) bool {
 	if !handler.hasStarted {
 		handler.hasStarted = true
 		handler.started = time.Now().UnixNano()
@@ -49,7 +49,10 @@ func (handler *MessageHandler) ReceiveMessage(message []byte) {
 		ms := float32(handler.stopped-handler.started) / 1000000.0
 		log.Printf("Received %d messages in %f ms\n", handler.NumberOfMessages, ms)
 		log.Printf("Received %f per second\n", 1000*float32(handler.NumberOfMessages)/ms)
+		return true
 	}
+
+	return false
 }
 
 func (machine MessageReceivingMachine) WaitForCompletion() {
