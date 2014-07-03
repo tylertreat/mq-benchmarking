@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -45,9 +46,20 @@ func runKestrel(messageCount int, messageSize int) {
 	log.Println("End kestrel test")
 }
 
+func runKafka(messageCount int, messageSize int) {
+	log.Println("Begin kafka test")
+	kafka := mq.NewKafka(messageCount)
+	kafka.Setup()
+	benchmark.Runner{kafka, kafka}.Run(messageSize, messageCount)
+	kafka.Teardown()
+	log.Println("End kafka test")
+}
+
 func main() {
+	usage := fmt.Sprintf("usage: %s {inproc|zeromq|nanomsg|kestrel|kafka} [num_messages] [message_size]", os.Args[0])
+
 	if len(os.Args) < 2 {
-		log.Printf("usage: %s inproc|zeromq|nanomsg [num_messages] [message_size]", os.Args[0])
+		log.Print(usage)
 		os.Exit(1)
 	}
 
@@ -58,7 +70,7 @@ func main() {
 	if len(os.Args) > 2 {
 		count, err := strconv.Atoi(os.Args[2])
 		if err != nil {
-			log.Printf("usage: %s inproc|zeromq|nanomsg [num_messages] [message_size]", os.Args[0])
+			log.Print(usage)
 			os.Exit(1)
 		}
 		messageCount = count
@@ -67,7 +79,7 @@ func main() {
 	if len(os.Args) > 3 {
 		size, err := strconv.Atoi(os.Args[3])
 		if err != nil {
-			log.Printf("usage: %s inproc|zeromq|nanomsg [num_messages] [message_size]", os.Args[0])
+			log.Print(usage)
 			os.Exit(1)
 		}
 		messageSize = size
@@ -81,8 +93,10 @@ func main() {
 		runNanomsg(messageCount, messageSize)
 	} else if test == "kestrel" {
 		runKestrel(messageCount, messageSize)
+	} else if test == "kafka" {
+		runKafka(messageCount, messageSize)
 	} else {
-		log.Printf("usage: %s inproc|zeromq|nanomsg [num_messages] [message_size]", os.Args[0])
+		log.Print(usage)
 		os.Exit(1)
 	}
 }
