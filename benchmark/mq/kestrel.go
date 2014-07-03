@@ -16,21 +16,23 @@ type Kestrel struct {
 
 func kestrelReceive(k Kestrel) {
 	for {
-		message, _ := k.sub.Get(k.queue, 1, 0, 1*time.Minute)
+		message, _ := k.sub.Get(k.queue, 1, 0, 0)
 		if len(message) > 0 {
 			k.ReceiveMessage(message[0].Data)
+		} else {
+			time.Sleep(time.Millisecond)
 		}
 	}
 }
 
 func NewKestrel(numberOfMessages int) Kestrel {
-	client := kestrel.NewClient("localhost", 2229)
+	pub := kestrel.NewClient("localhost", 2229)
 	sub := kestrel.NewClient("localhost", 2229)
 
 	return Kestrel{
 		handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
 		queue:   "transient_events",
-		pub:     client,
+		pub:     pub,
 		sub:     sub,
 	}
 }
