@@ -1,8 +1,6 @@
 package mq
 
 import (
-	"time"
-
 	"github.com/alindeman/go-kestrel"
 	"github.com/tylertreat/mq-benchmarking/benchmark"
 )
@@ -19,8 +17,6 @@ func kestrelReceive(k Kestrel) {
 		message, _ := k.sub.Get(k.queue, 1, 0, 0)
 		if len(message) > 0 {
 			k.ReceiveMessage(message[0].Data)
-		} else {
-			time.Sleep(time.Millisecond)
 		}
 	}
 }
