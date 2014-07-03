@@ -36,6 +36,15 @@ func runNanomsg(messageCount int, messageSize int) {
 	log.Println("End nanomsg test")
 }
 
+func runKestrel(messageCount int, messageSize int) {
+	log.Println("Begin kestrel test")
+	kestrel := mq.NewKestrel(messageCount)
+	kestrel.Setup()
+	benchmark.Runner{kestrel, kestrel}.Run(messageSize, messageCount)
+	kestrel.Teardown()
+	log.Println("End kestrel test")
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Printf("usage: %s inproc|zeromq|nanomsg [num_messages] [message_size]", os.Args[0])
@@ -70,6 +79,8 @@ func main() {
 		runZeromq(messageCount, messageSize)
 	} else if test == "nanomsg" {
 		runNanomsg(messageCount, messageSize)
+	} else if test == "kestrel" {
+		runKestrel(messageCount, messageSize)
 	} else {
 		log.Printf("usage: %s inproc|zeromq|nanomsg [num_messages] [message_size]", os.Args[0])
 		os.Exit(1)
