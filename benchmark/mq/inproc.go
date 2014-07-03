@@ -2,26 +2,26 @@ package mq
 
 import "github.com/tylertreat/mq-benchmarking/benchmark"
 
-type inproc struct {
+type Inproc struct {
 	handler *benchmark.MessageHandler
 }
 
-func NewInproc(numberOfMessages int) inproc {
-	return inproc{handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages}}
+func NewInproc(numberOfMessages int) Inproc {
+	return Inproc{handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages}}
 }
 
-func (inproc inproc) Send(message []byte) {
+func (inproc Inproc) Send(message []byte) {
 	inproc.ReceiveMessage(message)
 }
 
-func (inproc inproc) ReceiveMessage(message []byte) {
+func (inproc Inproc) ReceiveMessage(message []byte) {
 	inproc.handler.ReceiveMessage(message)
 }
 
-func (inproc inproc) MessageHandler() *benchmark.MessageHandler {
+func (inproc Inproc) MessageHandler() *benchmark.MessageHandler {
 	return inproc.handler
 }
 
-func (inproc inproc) Setup() {}
+func (inproc Inproc) Setup() {}
 
-func (inproc inproc) Teardown() {}
+func (inproc Inproc) Teardown() {}

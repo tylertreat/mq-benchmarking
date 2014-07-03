@@ -5,50 +5,50 @@ import (
 	"github.com/tylertreat/mq-benchmarking/benchmark"
 )
 
-type nano struct {
+type Nanomsg struct {
 	handler  *benchmark.MessageHandler
 	sender   *nanomsg.PubSocket
 	receiver *nanomsg.SubSocket
 }
 
-func nanoReceive(nano nano) {
+func nanoReceive(nano Nanomsg) {
 	for {
 		message, _ := nano.receiver.Recv(nanomsg.DontWait)
 		nano.ReceiveMessage(message)
 	}
 }
 
-func NewNanomsg(numberOfMessages int) nano {
+func NewNanomsg(numberOfMessages int) Nanomsg {
 	pub, _ := nanomsg.NewPubSocket()
 	pub.Bind("tcp://*:5555")
 	sub, _ := nanomsg.NewSubSocket()
 	sub.Subscribe("")
 	sub.Connect("tcp://localhost:5555")
 
-	return nano{
+	return Nanomsg{
 		handler:  &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
 		sender:   pub,
 		receiver: sub,
 	}
 }
 
-func (nano nano) Setup() {
+func (nano Nanomsg) Setup() {
 	go nanoReceive(nano)
 }
 
-func (nano nano) Teardown() {
+func (nano Nanomsg) Teardown() {
 	nano.sender.Close()
 	nano.receiver.Close()
 }
 
-func (nano nano) Send(message []byte) {
+func (nano Nanomsg) Send(message []byte) {
 	nano.sender.Send(message, nanomsg.DontWait)
 }
 
-func (nano nano) ReceiveMessage(message []byte) {
+func (nano Nanomsg) ReceiveMessage(message []byte) {
 	nano.handler.ReceiveMessage(message)
 }
 
-func (nano nano) MessageHandler() *benchmark.MessageHandler {
+func (nano Nanomsg) MessageHandler() *benchmark.MessageHandler {
 	return nano.handler
 }
