@@ -57,7 +57,7 @@ func (machine MessageReceivingMachine) WaitForCompletion() {
 		if machine.Handler.hasCompleted {
 			break
 		} else {
-			time.Sleep(100)
+			time.Sleep(10 * time.Millisecond)
 		}
 	}
 }
