@@ -4,10 +4,9 @@ import "github.com/tylertreat/mq-benchmarking/benchmark"
 import "github.com/pebbe/zmq4"
 
 type zeromq struct {
-	handler          *benchmark.MessageHandler
-	numberOfMessages int
-	sender           *zmq4.Socket
-	receiver         *zmq4.Socket
+	handler  *benchmark.MessageHandler
+	sender   *zmq4.Socket
+	receiver *zmq4.Socket
 }
 
 func zeromqReceive(zeromq zeromq) {

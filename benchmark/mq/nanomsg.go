@@ -6,10 +6,9 @@ import (
 )
 
 type nano struct {
-	handler          *benchmark.MessageHandler
-	numberOfMessages int
-	sender           *nanomsg.PubSocket
-	receiver         *nanomsg.SubSocket
+	handler  *benchmark.MessageHandler
+	sender   *nanomsg.PubSocket
+	receiver *nanomsg.SubSocket
 }
 
 func nanoReceive(nano nano) {

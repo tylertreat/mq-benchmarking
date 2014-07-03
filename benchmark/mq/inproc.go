@@ -3,8 +3,7 @@ package mq
 import "github.com/tylertreat/mq-benchmarking/benchmark"
 
 type inproc struct {
-	handler          *benchmark.MessageHandler
-	numberOfMessages int
+	handler *benchmark.MessageHandler
 }
 
 func NewInproc(numberOfMessages int) inproc {
