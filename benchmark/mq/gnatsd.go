@@ -7,36 +7,32 @@ import (
 
 type Gnatsd struct {
 	handler *benchmark.MessageHandler
-	pub     *nats.Conn
-	sub     *nats.Conn
+	conn    *nats.Conn
 	subject string
 }
 
 func NewGnatsd(numberOfMessages int) Gnatsd {
-	pub, _ := nats.Connect(nats.DefaultURL)
-	sub, _ := nats.Connect(nats.DefaultURL)
+	conn, _ := nats.Connect(nats.DefaultURL)
 
 	return Gnatsd{
 		handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
 		subject: "test",
-		pub:     pub,
-		sub:     sub,
+		conn:    conn,
 	}
 }
 
 func (g Gnatsd) Setup() {
-	g.sub.Subscribe(g.subject, func(message *nats.Msg) {
+	g.conn.Subscribe(g.subject, func(message *nats.Msg) {
 		g.ReceiveMessage(message.Data)
 	})
 }
 
 func (g Gnatsd) Teardown() {
-	g.pub.Close()
-	g.sub.Close()
+	g.conn.Close()
 }
 
 func (g Gnatsd) Send(message []byte) {
-	g.pub.Publish(g.subject, message)
+	g.conn.Publish(g.subject, message)
 }
 
 func (g Gnatsd) ReceiveMessage(message []byte) bool {
