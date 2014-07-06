@@ -82,9 +82,18 @@ func runRedis(messageCount int, messageSize int) {
 	log.Println("End redis test")
 }
 
+func runActivemq(messageCount int, messageSize int) {
+	log.Println("Begin activemq test")
+	activemq := mq.NewActivemq(messageCount)
+	activemq.Setup()
+	benchmark.Runner{activemq, activemq}.Run(messageSize, messageCount)
+	activemq.Teardown()
+	log.Println("End activemq test")
+}
+
 func main() {
 	usage := fmt.Sprintf(
-		"usage: %s {inproc|zeromq|nanomsg|kestrel|kafka|nsq} [num_messages] [message_size]",
+		"usage: %s {inproc|zeromq|nanomsg|kestrel|kafka|nsq|redis|activemq} [num_messages] [message_size]",
 		os.Args[0])
 
 	if len(os.Args) < 2 {
@@ -130,6 +139,8 @@ func main() {
 		runNsq(messageCount, messageSize)
 	} else if test == "redis" {
 		runRedis(messageCount, messageSize)
+	} else if test == "activemq" {
+		runActivemq(messageCount, messageSize)
 	} else {
 		log.Print(usage)
 		os.Exit(1)
