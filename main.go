@@ -64,8 +64,19 @@ func runRabbitmq(messageCount int, messageSize int) {
 	log.Println("End rabbitmq test")
 }
 
+func runNsq(messageCount int, messageSize int) {
+	log.Println("Begin nsq test")
+	nsq := mq.NewNsq(messageCount)
+	nsq.Setup()
+	benchmark.Runner{nsq, nsq}.Run(messageSize, messageCount)
+	nsq.Teardown()
+	log.Println("End nsq test")
+}
+
 func main() {
-	usage := fmt.Sprintf("usage: %s {inproc|zeromq|nanomsg|kestrel|kafka} [num_messages] [message_size]", os.Args[0])
+	usage := fmt.Sprintf(
+		"usage: %s {inproc|zeromq|nanomsg|kestrel|kafka|nsq} [num_messages] [message_size]",
+		os.Args[0])
 
 	if len(os.Args) < 2 {
 		log.Print(usage)
@@ -106,6 +117,8 @@ func main() {
 		runKafka(messageCount, messageSize)
 	} else if test == "rabbitmq" {
 		runRabbitmq(messageCount, messageSize)
+	} else if test == "nsq" {
+		runNsq(messageCount, messageSize)
 	} else {
 		log.Print(usage)
 		os.Exit(1)
