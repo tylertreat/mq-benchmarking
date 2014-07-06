@@ -1,6 +1,7 @@
 package benchmark
 
 import (
+	"encoding/binary"
 	"log"
 	"time"
 )
@@ -26,7 +27,12 @@ func NewReceivingMachine(receiver MessageReceiver, messages int) *MessageReceivi
 	}
 }
 
-type MessageHandler struct {
+type MessageHandler interface {
+	ReceiveMessage([]byte) bool
+	HasCompleted() bool
+}
+
+type ThroughputMessageHandler struct {
 	hasStarted       bool
 	hasCompleted     bool
 	messageCounter   int
@@ -35,7 +41,18 @@ type MessageHandler struct {
 	stopped          int64
 }
 
-func (handler *MessageHandler) ReceiveMessage(message []byte) bool {
+type LatencyMessageHandler struct {
+	NumberOfMessages int
+	Latencies        []float32
+	messageCounter   int
+	hasCompleted     bool
+}
+
+func (handler *ThroughputMessageHandler) HasCompleted() bool {
+	return handler.hasCompleted
+}
+
+func (handler *ThroughputMessageHandler) ReceiveMessage(message []byte) bool {
 	if !handler.hasStarted {
 		handler.hasStarted = true
 		handler.started = time.Now().UnixNano()
@@ -55,9 +72,37 @@ func (handler *MessageHandler) ReceiveMessage(message []byte) bool {
 	return false
 }
 
+func (handler *LatencyMessageHandler) HasCompleted() bool {
+	return handler.hasCompleted
+}
+
+func (handler *LatencyMessageHandler) ReceiveMessage(message []byte) bool {
+	now := time.Now().UnixNano()
+	then, _ := binary.Varint(message)
+
+	//if then != 0 {
+	handler.Latencies = append(handler.Latencies, (float32(now-then))/1000/1000)
+	//}
+
+	handler.messageCounter++
+	if handler.messageCounter == handler.NumberOfMessages {
+		handler.hasCompleted = true
+		sum := float32(0)
+		for _, latency := range handler.Latencies {
+			sum += latency
+		}
+		avgLatency := float32(sum) / float32(len(handler.Latencies))
+		log.Printf("Mean latency for %d messages: %f ms\n", handler.NumberOfMessages,
+			avgLatency)
+		return true
+	}
+
+	return false
+}
+
 func (machine MessageReceivingMachine) WaitForCompletion() {
 	for {
-		if machine.Handler.hasCompleted {
+		if (*machine.Handler).HasCompleted() {
 			break
 		} else {
 			time.Sleep(10 * time.Millisecond)

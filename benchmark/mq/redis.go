@@ -6,7 +6,7 @@ import (
 )
 
 type Redis struct {
-	handler *benchmark.MessageHandler
+	handler benchmark.MessageHandler
 	pub     redis.Conn
 	sub     redis.PubSubConn
 	channel string
@@ -21,15 +21,25 @@ func redisReceive(r Redis) {
 	}
 }
 
-func NewRedis(numberOfMessages int) Redis {
+func NewRedis(numberOfMessages int, testLatency bool) Redis {
 	channel := "test"
 	pub, _ := redis.Dial("tcp", ":6379")
 	subConn, _ := redis.Dial("tcp", ":6379")
 	sub := redis.PubSubConn{subConn}
 	sub.Subscribe(channel)
 
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
+
 	return Redis{
-		handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler: handler,
 		pub:     pub,
 		sub:     sub,
 		channel: channel,
@@ -55,5 +65,5 @@ func (r Redis) ReceiveMessage(message []byte) bool {
 }
 
 func (r Redis) MessageHandler() *benchmark.MessageHandler {
-	return r.handler
+	return &r.handler
 }

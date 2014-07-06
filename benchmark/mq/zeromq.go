@@ -1,10 +1,14 @@
 package mq
 
-import "github.com/tylertreat/mq-benchmarking/benchmark"
-import "github.com/pebbe/zmq4"
+import (
+	"time"
+
+	"github.com/pebbe/zmq4"
+	"github.com/tylertreat/mq-benchmarking/benchmark"
+)
 
 type Zeromq struct {
-	handler  *benchmark.MessageHandler
+	handler  benchmark.MessageHandler
 	sender   *zmq4.Socket
 	receiver *zmq4.Socket
 }
@@ -18,22 +22,33 @@ func zeromqReceive(zeromq Zeromq) {
 	}
 }
 
-func NewZeromq(numberOfMessages int) Zeromq {
+func NewZeromq(numberOfMessages int, testLatency bool) Zeromq {
 	ctx, _ := zmq4.NewContext()
 	pub, _ := ctx.NewSocket(zmq4.PUB)
 	pub.Bind("tcp://*:5555")
 	sub, _ := ctx.NewSocket(zmq4.SUB)
-	sub.SetSubscribe("")
-	sub.Connect("tcp://localhost:5555")
+
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
 
 	return Zeromq{
-		handler:  &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler:  handler,
 		sender:   pub,
 		receiver: sub,
 	}
 }
 
 func (zeromq Zeromq) Setup() {
+	zeromq.receiver.Connect("tcp://localhost:5555")
+	zeromq.receiver.SetSubscribe("")
+	time.Sleep(3 * time.Second)
 	go zeromqReceive(zeromq)
 }
 
@@ -51,5 +66,5 @@ func (zeromq Zeromq) ReceiveMessage(message []byte) bool {
 }
 
 func (zeromq Zeromq) MessageHandler() *benchmark.MessageHandler {
-	return zeromq.handler
+	return &zeromq.handler
 }

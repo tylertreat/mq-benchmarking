@@ -6,16 +6,26 @@ import (
 )
 
 type Gnatsd struct {
-	handler *benchmark.MessageHandler
+	handler benchmark.MessageHandler
 	conn    *nats.Conn
 	subject string
 }
 
-func NewGnatsd(numberOfMessages int) Gnatsd {
+func NewGnatsd(numberOfMessages int, testLatency bool) Gnatsd {
 	conn, _ := nats.Connect(nats.DefaultURL)
 
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
+
 	return Gnatsd{
-		handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler: handler,
 		subject: "test",
 		conn:    conn,
 	}
@@ -41,5 +51,5 @@ func (g Gnatsd) ReceiveMessage(message []byte) bool {
 }
 
 func (g Gnatsd) MessageHandler() *benchmark.MessageHandler {
-	return g.handler
+	return &g.handler
 }

@@ -20,7 +20,7 @@ type producer struct {
 }
 
 type Rabbitmq struct {
-	handler  *benchmark.MessageHandler
+	handler  benchmark.MessageHandler
 	pub      *producer
 	sub      *consumer
 	queue    string
@@ -110,7 +110,7 @@ loop:
 	}
 }
 
-func NewRabbitmq(numberOfMessages int) Rabbitmq {
+func NewRabbitmq(numberOfMessages int, testLatency bool) Rabbitmq {
 	exchange := "test"
 	exchangeType := "direct"
 	uri := "amqp://guest:guest@localhost:5672"
@@ -132,8 +132,18 @@ func NewRabbitmq(numberOfMessages int) Rabbitmq {
 	pub := &producer{conn: pubConn, channel: pubChan}
 	sub, _ := newConsumer(uri, exchange, exchangeType, queue, key, ctag)
 
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
+
 	return Rabbitmq{
-		handler:  &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler:  handler,
 		pub:      pub,
 		sub:      sub,
 		queue:    queue,
@@ -173,5 +183,5 @@ func (r Rabbitmq) ReceiveMessage(message []byte) bool {
 }
 
 func (r Rabbitmq) MessageHandler() *benchmark.MessageHandler {
-	return r.handler
+	return &r.handler
 }

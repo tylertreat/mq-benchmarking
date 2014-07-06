@@ -6,7 +6,7 @@ import (
 )
 
 type Kestrel struct {
-	handler *benchmark.MessageHandler
+	handler benchmark.MessageHandler
 	queue   string
 	pub     *kestrel.Client
 	sub     *kestrel.Client
@@ -23,12 +23,22 @@ func kestrelReceive(k Kestrel) {
 	}
 }
 
-func NewKestrel(numberOfMessages int) Kestrel {
+func NewKestrel(numberOfMessages int, testLatency bool) Kestrel {
 	pub := kestrel.NewClient("localhost", 2229)
 	sub := kestrel.NewClient("localhost", 2229)
 
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
+
 	return Kestrel{
-		handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler: handler,
 		queue:   "transient_events",
 		pub:     pub,
 		sub:     sub,
@@ -54,5 +64,5 @@ func (k Kestrel) ReceiveMessage(message []byte) bool {
 }
 
 func (k Kestrel) MessageHandler() *benchmark.MessageHandler {
-	return k.handler
+	return &k.handler
 }

@@ -6,21 +6,31 @@ import (
 )
 
 type Nsq struct {
-	handler *benchmark.MessageHandler
+	handler benchmark.MessageHandler
 	pub     *nsq.Producer
 	sub     *nsq.Consumer
 	topic   string
 	channel string
 }
 
-func NewNsq(numberOfMessages int) Nsq {
+func NewNsq(numberOfMessages int, testLatency bool) Nsq {
 	topic := "test"
 	channel := "test"
 	pub, _ := nsq.NewProducer("localhost:4150", nsq.NewConfig())
 	sub, _ := nsq.NewConsumer(topic, channel, nsq.NewConfig())
 
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
+
 	return Nsq{
-		handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler: handler,
 		pub:     pub,
 		sub:     sub,
 		topic:   topic,
@@ -50,5 +60,5 @@ func (n Nsq) ReceiveMessage(message []byte) bool {
 }
 
 func (n Nsq) MessageHandler() *benchmark.MessageHandler {
-	return n.handler
+	return &n.handler
 }

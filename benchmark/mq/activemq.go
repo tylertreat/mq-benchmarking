@@ -6,7 +6,7 @@ import (
 )
 
 type Activemq struct {
-	handler *benchmark.MessageHandler
+	handler benchmark.MessageHandler
 	pub     *stomp.Conn
 	subConn *stomp.Conn
 	sub     *stomp.Subscription
@@ -22,14 +22,24 @@ func activemqReceive(a Activemq) {
 	}
 }
 
-func NewActivemq(numberOfMessages int) Activemq {
+func NewActivemq(numberOfMessages int, testLatency bool) Activemq {
 	queue := "test"
 	pub, _ := stomp.Dial("tcp", "localhost:61613", stomp.Options{})
 	subConn, _ := stomp.Dial("tcp", "localhost:61613", stomp.Options{})
 	sub, _ := subConn.Subscribe(queue, stomp.AckAuto)
 
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
+
 	return Activemq{
-		handler: &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler: handler,
 		queue:   queue,
 		pub:     pub,
 		subConn: subConn,
@@ -55,5 +65,5 @@ func (a Activemq) ReceiveMessage(message []byte) bool {
 }
 
 func (a Activemq) MessageHandler() *benchmark.MessageHandler {
-	return a.handler
+	return &a.handler
 }

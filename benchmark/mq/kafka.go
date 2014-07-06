@@ -6,7 +6,7 @@ import (
 )
 
 type Kafka struct {
-	handler   *benchmark.MessageHandler
+	handler   benchmark.MessageHandler
 	pubClient *sarama.Client
 	subClient *sarama.Client
 	pub       *sarama.Producer
@@ -23,7 +23,7 @@ func kafkaReceive(k Kafka) {
 	}
 }
 
-func NewKafka(numberOfMessages int) Kafka {
+func NewKafka(numberOfMessages int, testLatency bool) Kafka {
 	pubClient, _ := sarama.NewClient("pub", []string{"localhost:9092"}, sarama.NewClientConfig())
 	subClient, _ := sarama.NewClient("sub", []string{"localhost:9092"}, sarama.NewClientConfig())
 
@@ -33,8 +33,18 @@ func NewKafka(numberOfMessages int) Kafka {
 	consumerConfig.OffsetMethod = sarama.OffsetMethodNewest // Only read new messages
 	sub, _ := sarama.NewConsumer(subClient, topic, 0, "test", consumerConfig)
 
+	var handler benchmark.MessageHandler
+	if testLatency {
+		handler = &benchmark.LatencyMessageHandler{
+			NumberOfMessages: numberOfMessages,
+			Latencies:        []float32{},
+		}
+	} else {
+		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
+	}
+
 	return Kafka{
-		handler:   &benchmark.MessageHandler{NumberOfMessages: numberOfMessages},
+		handler:   handler,
 		pubClient: pubClient,
 		subClient: subClient,
 		pub:       pub,
@@ -63,5 +73,5 @@ func (k Kafka) ReceiveMessage(message []byte) bool {
 }
 
 func (k Kafka) MessageHandler() *benchmark.MessageHandler {
-	return k.handler
+	return &k.handler
 }

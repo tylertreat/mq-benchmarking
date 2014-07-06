@@ -5,9 +5,16 @@ type Runner struct {
 	MessageSender   MessageSender
 }
 
-func (runner Runner) Run(messageSize int, numberOfMessages int) {
+func (runner Runner) TestThroughput(messageSize int, numberOfMessages int) {
 	receivingMachine := NewReceivingMachine(runner.MessageReceiver, numberOfMessages)
 	sendingMachine := &MessageSendingMachine{MessageSender: runner.MessageSender}
-	sendingMachine.Run(messageSize, numberOfMessages)
+	sendingMachine.TestThroughput(messageSize, numberOfMessages)
+	receivingMachine.WaitForCompletion()
+}
+
+func (runner Runner) TestLatency(messageSize int, numberOfMessages int) {
+	receivingMachine := NewReceivingMachine(runner.MessageReceiver, numberOfMessages)
+	sendingMachine := &MessageSendingMachine{MessageSender: runner.MessageSender}
+	sendingMachine.TestLatency(messageSize, numberOfMessages)
 	receivingMachine.WaitForCompletion()
 }
