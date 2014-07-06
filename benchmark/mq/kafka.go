@@ -24,10 +24,10 @@ func kafkaReceive(k Kafka) {
 }
 
 func NewKafka(numberOfMessages int) Kafka {
-	pubClient, _ := sarama.NewClient("pub", []string{"localhost:6667"}, sarama.NewClientConfig())
-	subClient, _ := sarama.NewClient("sub", []string{"localhost:6667"}, sarama.NewClientConfig())
+	pubClient, _ := sarama.NewClient("pub", []string{"localhost:9092"}, sarama.NewClientConfig())
+	subClient, _ := sarama.NewClient("sub", []string{"localhost:9092"}, sarama.NewClientConfig())
 
-	topic := "foo"
+	topic := "test"
 	pub, _ := sarama.NewProducer(pubClient, sarama.NewProducerConfig())
 	consumerConfig := sarama.NewConsumerConfig()
 	consumerConfig.OffsetMethod = sarama.OffsetMethodNewest // Only read new messages
