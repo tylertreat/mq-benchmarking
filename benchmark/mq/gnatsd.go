@@ -33,6 +33,7 @@ func (g Gnatsd) Teardown() {
 
 func (g Gnatsd) Send(message []byte) {
 	g.conn.Publish(g.subject, message)
+	g.conn.Flush()
 }
 
 func (g Gnatsd) ReceiveMessage(message []byte) bool {
