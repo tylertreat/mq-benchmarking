@@ -73,6 +73,15 @@ func runNsq(messageCount int, messageSize int) {
 	log.Println("End nsq test")
 }
 
+func runRedis(messageCount int, messageSize int) {
+	log.Println("Begin redis test")
+	redis := mq.NewRedis(messageCount)
+	redis.Setup()
+	benchmark.Runner{redis, redis}.Run(messageSize, messageCount)
+	redis.Teardown()
+	log.Println("End redis test")
+}
+
 func main() {
 	usage := fmt.Sprintf(
 		"usage: %s {inproc|zeromq|nanomsg|kestrel|kafka|nsq} [num_messages] [message_size]",
@@ -119,6 +128,8 @@ func main() {
 		runRabbitmq(messageCount, messageSize)
 	} else if test == "nsq" {
 		runNsq(messageCount, messageSize)
+	} else if test == "redis" {
+		runRedis(messageCount, messageSize)
 	} else {
 		log.Print(usage)
 		os.Exit(1)
