@@ -79,9 +79,10 @@ func (handler *LatencyMessageHandler) ReceiveMessage(message []byte) bool {
 	now := time.Now().UnixNano()
 	then, _ := binary.Varint(message)
 
-	//if then != 0 {
-	handler.Latencies = append(handler.Latencies, (float32(now-then))/1000/1000)
-	//}
+	// TODO: Figure out why nanomsg and ZeroMQ sometimes receive empty messages.
+	if then != 0 {
+		handler.Latencies = append(handler.Latencies, (float32(now-then))/1000/1000)
+	}
 
 	handler.messageCounter++
 	if handler.messageCounter == handler.NumberOfMessages {
