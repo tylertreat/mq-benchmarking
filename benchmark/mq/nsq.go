@@ -40,7 +40,7 @@ func NewNsq(numberOfMessages int, testLatency bool) Nsq {
 
 func (n Nsq) Setup() {
 	n.sub.SetHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
-		n.ReceiveMessage(message.Body)
+		n.handler.ReceiveMessage(message.Body)
 		return nil
 	}))
 	n.sub.ConnectToNSQD("localhost:4150")
@@ -53,10 +53,6 @@ func (n Nsq) Teardown() {
 
 func (n Nsq) Send(message []byte) {
 	n.pub.Publish(n.topic, message)
-}
-
-func (n Nsq) ReceiveMessage(message []byte) bool {
-	return n.handler.ReceiveMessage(message)
 }
 
 func (n Nsq) MessageHandler() *benchmark.MessageHandler {

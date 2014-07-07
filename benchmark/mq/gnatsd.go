@@ -33,7 +33,7 @@ func NewGnatsd(numberOfMessages int, testLatency bool) Gnatsd {
 
 func (g Gnatsd) Setup() {
 	g.conn.Subscribe(g.subject, func(message *nats.Msg) {
-		g.ReceiveMessage(message.Data)
+		g.handler.ReceiveMessage(message.Data)
 	})
 }
 
@@ -44,10 +44,6 @@ func (g Gnatsd) Teardown() {
 func (g Gnatsd) Send(message []byte) {
 	g.conn.Publish(g.subject, message)
 	g.conn.Flush()
-}
-
-func (g Gnatsd) ReceiveMessage(message []byte) bool {
-	return g.handler.ReceiveMessage(message)
 }
 
 func (g Gnatsd) MessageHandler() *benchmark.MessageHandler {

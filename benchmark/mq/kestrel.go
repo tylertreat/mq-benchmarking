@@ -16,7 +16,7 @@ func kestrelReceive(k Kestrel) {
 	for {
 		message, _ := k.sub.Get(k.queue, 1, 0, 0)
 		if len(message) > 0 {
-			if k.ReceiveMessage(message[0].Data) {
+			if k.handler.ReceiveMessage(message[0].Data) {
 				break
 			}
 		}
@@ -57,10 +57,6 @@ func (k Kestrel) Teardown() {
 
 func (k Kestrel) Send(message []byte) {
 	k.pub.Put(k.queue, [][]byte{message})
-}
-
-func (k Kestrel) ReceiveMessage(message []byte) bool {
-	return k.handler.ReceiveMessage(message)
 }
 
 func (k Kestrel) MessageHandler() *benchmark.MessageHandler {

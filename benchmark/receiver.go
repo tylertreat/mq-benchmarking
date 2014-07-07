@@ -7,7 +7,6 @@ import (
 )
 
 type MessageReceiver interface {
-	ReceiveMessage([]byte) bool
 	MessageHandler() *MessageHandler
 	Setup()
 	Teardown()

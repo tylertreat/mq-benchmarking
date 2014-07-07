@@ -16,7 +16,7 @@ type Nanomsg struct {
 func nanoReceive(nano Nanomsg) {
 	for {
 		message, _ := nano.receiver.Recv(nanomsg.DontWait)
-		if nano.ReceiveMessage(message) {
+		if nano.handler.ReceiveMessage(message) {
 			break
 		}
 	}
@@ -58,10 +58,6 @@ func (nano Nanomsg) Teardown() {
 
 func (nano Nanomsg) Send(message []byte) {
 	nano.sender.Send(message, nanomsg.DontWait)
-}
-
-func (nano Nanomsg) ReceiveMessage(message []byte) bool {
-	return nano.handler.ReceiveMessage(message)
 }
 
 func (nano Nanomsg) MessageHandler() *benchmark.MessageHandler {

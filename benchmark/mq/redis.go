@@ -16,7 +16,9 @@ func redisReceive(r Redis) {
 	for {
 		switch v := r.sub.Receive().(type) {
 		case redis.Message:
-			r.ReceiveMessage(v.Data)
+			if r.handler.ReceiveMessage(v.Data) {
+				break
+			}
 		}
 	}
 }
@@ -58,10 +60,6 @@ func (r Redis) Teardown() {
 func (r Redis) Send(message []byte) {
 	r.pub.Send("PUBLISH", r.channel, message)
 	r.pub.Flush()
-}
-
-func (r Redis) ReceiveMessage(message []byte) bool {
-	return r.handler.ReceiveMessage(message)
 }
 
 func (r Redis) MessageHandler() *benchmark.MessageHandler {

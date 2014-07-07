@@ -17,7 +17,7 @@ type Kafka struct {
 func kafkaReceive(k Kafka) {
 	for {
 		event := <-k.sub.Events()
-		if k.ReceiveMessage(event.Value) {
+		if k.handler.ReceiveMessage(event.Value) {
 			break
 		}
 	}
@@ -66,10 +66,6 @@ func (k Kafka) Teardown() {
 
 func (k Kafka) Send(message []byte) {
 	k.pub.SendMessage(k.topic, nil, sarama.StringEncoder(message))
-}
-
-func (k Kafka) ReceiveMessage(message []byte) bool {
-	return k.handler.ReceiveMessage(message)
 }
 
 func (k Kafka) MessageHandler() *benchmark.MessageHandler {

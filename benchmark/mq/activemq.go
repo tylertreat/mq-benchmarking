@@ -16,7 +16,7 @@ type Activemq struct {
 func activemqReceive(a Activemq) {
 	for {
 		message := <-a.sub.C
-		if a.ReceiveMessage(message.Body) {
+		if a.handler.ReceiveMessage(message.Body) {
 			break
 		}
 	}
@@ -58,10 +58,6 @@ func (a Activemq) Teardown() {
 
 func (a Activemq) Send(message []byte) {
 	a.pub.Send(a.queue, "", message, nil)
-}
-
-func (a Activemq) ReceiveMessage(message []byte) bool {
-	return a.handler.ReceiveMessage(message)
 }
 
 func (a Activemq) MessageHandler() *benchmark.MessageHandler {

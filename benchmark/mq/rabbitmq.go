@@ -103,7 +103,7 @@ loop:
 		)
 
 		for d := range deliveries {
-			if r.ReceiveMessage(d.Body) {
+			if r.handler.ReceiveMessage(d.Body) {
 				break loop
 			}
 		}
@@ -176,10 +176,6 @@ func (r Rabbitmq) Send(message []byte) {
 			Priority:        0,
 		},
 	)
-}
-
-func (r Rabbitmq) ReceiveMessage(message []byte) bool {
-	return r.handler.ReceiveMessage(message)
 }
 
 func (r Rabbitmq) MessageHandler() *benchmark.MessageHandler {
