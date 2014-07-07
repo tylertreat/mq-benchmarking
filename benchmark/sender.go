@@ -10,15 +10,15 @@ type MessageSender interface {
 	Send([]byte)
 }
 
-type MessageSendingMachine struct {
+type SendEndpoint struct {
 	MessageSender MessageSender
 }
 
-func (machine MessageSendingMachine) TestThroughput(messageSize int, numberToSend int) {
+func (endpoint SendEndpoint) TestThroughput(messageSize int, numberToSend int) {
 	message := make([]byte, messageSize)
 	start := time.Now().UnixNano()
 	for i := 0; i < numberToSend; i++ {
-		machine.MessageSender.Send(message)
+		endpoint.MessageSender.Send(message)
 	}
 
 	stop := time.Now().UnixNano()
@@ -27,12 +27,12 @@ func (machine MessageSendingMachine) TestThroughput(messageSize int, numberToSen
 	log.Printf("Sent %f per second\n", 1000*float32(numberToSend)/ms)
 }
 
-func (machine MessageSendingMachine) TestLatency(messageSize int, numberToSend int) {
+func (endpoint SendEndpoint) TestLatency(messageSize int, numberToSend int) {
 	start := time.Now().UnixNano()
 	b := make([]byte, 9)
 	for i := 0; i < numberToSend; i++ {
 		binary.PutVarint(b, time.Now().UnixNano())
-		machine.MessageSender.Send(b)
+		endpoint.MessageSender.Send(b)
 	}
 
 	stop := time.Now().UnixNano()

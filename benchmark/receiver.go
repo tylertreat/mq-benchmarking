@@ -13,16 +13,16 @@ type MessageReceiver interface {
 	Teardown()
 }
 
-type MessageReceivingMachine struct {
+type ReceiveEndpoint struct {
 	MessageReceiver  MessageReceiver
 	NumberOfMessages int
 	Handler          *MessageHandler
 }
 
-func NewReceivingMachine(receiver MessageReceiver, messages int) *MessageReceivingMachine {
-	return &MessageReceivingMachine{
+func NewReceiveEndpoint(receiver MessageReceiver, numberOfMessages int) *ReceiveEndpoint {
+	return &ReceiveEndpoint{
 		MessageReceiver:  receiver,
-		NumberOfMessages: messages,
+		NumberOfMessages: numberOfMessages,
 		Handler:          receiver.MessageHandler(),
 	}
 }
@@ -100,9 +100,9 @@ func (handler *LatencyMessageHandler) ReceiveMessage(message []byte) bool {
 	return false
 }
 
-func (machine MessageReceivingMachine) WaitForCompletion() {
+func (endpoint ReceiveEndpoint) WaitForCompletion() {
 	for {
-		if (*machine.Handler).HasCompleted() {
+		if (*endpoint.Handler).HasCompleted() {
 			break
 		} else {
 			time.Sleep(10 * time.Millisecond)

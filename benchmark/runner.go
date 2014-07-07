@@ -6,15 +6,15 @@ type Runner struct {
 }
 
 func (runner Runner) TestThroughput(messageSize int, numberOfMessages int) {
-	receivingMachine := NewReceivingMachine(runner.MessageReceiver, numberOfMessages)
-	sendingMachine := &MessageSendingMachine{MessageSender: runner.MessageSender}
-	sendingMachine.TestThroughput(messageSize, numberOfMessages)
-	receivingMachine.WaitForCompletion()
+	receiver := NewReceiveEndpoint(runner.MessageReceiver, numberOfMessages)
+	sender := &SendEndpoint{MessageSender: runner.MessageSender}
+	sender.TestThroughput(messageSize, numberOfMessages)
+	receiver.WaitForCompletion()
 }
 
 func (runner Runner) TestLatency(messageSize int, numberOfMessages int) {
-	receivingMachine := NewReceivingMachine(runner.MessageReceiver, numberOfMessages)
-	sendingMachine := &MessageSendingMachine{MessageSender: runner.MessageSender}
-	sendingMachine.TestLatency(messageSize, numberOfMessages)
-	receivingMachine.WaitForCompletion()
+	receiver := NewReceiveEndpoint(runner.MessageReceiver, numberOfMessages)
+	sender := &SendEndpoint{MessageSender: runner.MessageSender}
+	sender.TestLatency(messageSize, numberOfMessages)
+	receiver.WaitForCompletion()
 }
