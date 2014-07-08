@@ -2,6 +2,7 @@ mq-benchmarking
 ==========================
 
 Results: http://www.bravenewgeek.com/dissecting-message-queues/
+___
 
 Usage: `go run main.go subject [test_latency] [num_messages] [message_size]`
 
