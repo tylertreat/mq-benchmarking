@@ -51,7 +51,7 @@ func newTester(subject string, testLatency bool, msgCount, msgSize int) *benchma
 		activemq := mq.NewActivemq(msgCount, testLatency)
 		messageSender = activemq
 		messageReceiver = activemq
-	case "gnatsd":
+	case "nats":
 		gnatsd := mq.NewGnatsd(msgCount, testLatency)
 		messageSender = gnatsd
 		messageReceiver = gnatsd
@@ -70,6 +70,7 @@ func newTester(subject string, testLatency bool, msgCount, msgSize int) *benchma
 }
 
 func parseArgs(usage string) (string, bool, int, int) {
+
 	if len(os.Args) < 2 {
 		log.Print(usage)
 		os.Exit(1)
@@ -113,7 +114,7 @@ func parseArgs(usage string) (string, bool, int, int) {
 func main() {
 	usage := fmt.Sprintf(
 		"usage: %s "+
-			"{inproc|zeromq|nanomsg|kestrel|kafka|rabbitmq|nsq|redis|activemq|gnatsd} "+
+			"{inproc|zeromq|nanomsg|kestrel|kafka|rabbitmq|nsq|redis|activemq|nats} "+
 			"[test_latency] [num_messages] [message_size]",
 		os.Args[0])
 

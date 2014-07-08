@@ -39,7 +39,7 @@ func NewNsq(numberOfMessages int, testLatency bool) Nsq {
 }
 
 func (n Nsq) Setup() {
-	n.sub.SetHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
+	n.sub.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
 		n.handler.ReceiveMessage(message.Body)
 		return nil
 	}))
