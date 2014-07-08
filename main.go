@@ -70,7 +70,6 @@ func newTester(subject string, testLatency bool, msgCount, msgSize int) *benchma
 }
 
 func parseArgs(usage string) (string, bool, int, int) {
-
 	if len(os.Args) < 2 {
 		log.Print(usage)
 		os.Exit(1)
