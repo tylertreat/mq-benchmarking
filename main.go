@@ -10,142 +10,66 @@ import (
 	"github.com/tylertreat/mq-benchmarking/benchmark/mq"
 )
 
-// TODO: Make this code more DRY.
+func newTester(subject string, testLatency bool, msgCount, msgSize int) *benchmark.Tester {
+	var messageSender benchmark.MessageSender
+	var messageReceiver benchmark.MessageReceiver
 
-func runInproc(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin inproc test")
-	inproc := mq.NewInproc(messageCount, testLatency)
-	inproc.Setup()
-	if testLatency {
-		benchmark.Runner{inproc, inproc}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{inproc, inproc}.TestThroughput(messageSize, messageCount)
+	switch subject {
+	case "inproc":
+		inproc := mq.NewInproc(msgCount, testLatency)
+		messageSender = inproc
+		messageReceiver = inproc
+	case "zeromq":
+		zeromq := mq.NewZeromq(msgCount, testLatency)
+		messageSender = zeromq
+		messageReceiver = zeromq
+	case "nanomsg":
+		nanomsg := mq.NewNanomsg(msgCount, testLatency)
+		messageSender = nanomsg
+		messageReceiver = nanomsg
+	case "kestrel":
+		kestrel := mq.NewKestrel(msgCount, testLatency)
+		messageSender = kestrel
+		messageReceiver = kestrel
+	case "kafka":
+		kafka := mq.NewKafka(msgCount, testLatency)
+		messageSender = kafka
+		messageReceiver = kafka
+	case "rabbitmq":
+		rabbitmq := mq.NewRabbitmq(msgCount, testLatency)
+		messageSender = rabbitmq
+		messageReceiver = rabbitmq
+	case "nsq":
+		nsq := mq.NewNsq(msgCount, testLatency)
+		messageSender = nsq
+		messageReceiver = nsq
+	case "redis":
+		redis := mq.NewRedis(msgCount, testLatency)
+		messageSender = redis
+		messageReceiver = redis
+	case "activemq":
+		activemq := mq.NewActivemq(msgCount, testLatency)
+		messageSender = activemq
+		messageReceiver = activemq
+	case "gnatsd":
+		gnatsd := mq.NewGnatsd(msgCount, testLatency)
+		messageSender = gnatsd
+		messageReceiver = gnatsd
+	default:
+		return nil
 	}
-	inproc.Teardown()
-	log.Println("End inproc test")
+
+	return &benchmark.Tester{
+		subject,
+		msgSize,
+		msgCount,
+		testLatency,
+		messageSender,
+		messageReceiver,
+	}
 }
 
-func runZeromq(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin zeromq test")
-	zeromq := mq.NewZeromq(messageCount, testLatency)
-	zeromq.Setup()
-	if testLatency {
-		benchmark.Runner{zeromq, zeromq}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{zeromq, zeromq}.TestThroughput(messageSize, messageCount)
-	}
-	zeromq.Teardown()
-	log.Println("End zeromq test")
-}
-
-func runNanomsg(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin nanomsg test")
-	nanomsg := mq.NewNanomsg(messageCount, testLatency)
-	nanomsg.Setup()
-	if testLatency {
-		benchmark.Runner{nanomsg, nanomsg}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{nanomsg, nanomsg}.TestThroughput(messageSize, messageCount)
-	}
-	nanomsg.Teardown()
-	log.Println("End nanomsg test")
-}
-
-func runKestrel(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin kestrel test")
-	kestrel := mq.NewKestrel(messageCount, testLatency)
-	kestrel.Setup()
-	if testLatency {
-		benchmark.Runner{kestrel, kestrel}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{kestrel, kestrel}.TestThroughput(messageSize, messageCount)
-	}
-	kestrel.Teardown()
-	log.Println("End kestrel test")
-}
-
-func runKafka(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin kafka test")
-	kafka := mq.NewKafka(messageCount, testLatency)
-	kafka.Setup()
-	if testLatency {
-		benchmark.Runner{kafka, kafka}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{kafka, kafka}.TestThroughput(messageSize, messageCount)
-	}
-	kafka.Teardown()
-	log.Println("End kafka test")
-}
-
-func runRabbitmq(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin rabbitmq test")
-	rabbitmq := mq.NewRabbitmq(messageCount, testLatency)
-	rabbitmq.Setup()
-	if testLatency {
-		benchmark.Runner{rabbitmq, rabbitmq}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{rabbitmq, rabbitmq}.TestThroughput(messageSize, messageCount)
-	}
-	rabbitmq.Teardown()
-	log.Println("End rabbitmq test")
-}
-
-func runNsq(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin nsq test")
-	nsq := mq.NewNsq(messageCount, testLatency)
-	nsq.Setup()
-	if testLatency {
-		benchmark.Runner{nsq, nsq}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{nsq, nsq}.TestThroughput(messageSize, messageCount)
-	}
-	nsq.Teardown()
-	log.Println("End nsq test")
-}
-
-func runRedis(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin redis test")
-	redis := mq.NewRedis(messageCount, testLatency)
-	redis.Setup()
-	if testLatency {
-		benchmark.Runner{redis, redis}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{redis, redis}.TestThroughput(messageSize, messageCount)
-	}
-	redis.Teardown()
-	log.Println("End redis test")
-}
-
-func runActivemq(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin activemq test")
-	activemq := mq.NewActivemq(messageCount, testLatency)
-	activemq.Setup()
-	if testLatency {
-		benchmark.Runner{activemq, activemq}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{activemq, activemq}.TestThroughput(messageSize, messageCount)
-	}
-	activemq.Teardown()
-	log.Println("End activemq test")
-}
-
-func runGnatsd(messageCount int, messageSize int, testLatency bool) {
-	log.Println("Begin gnatsd test")
-	gnatsd := mq.NewGnatsd(messageCount, testLatency)
-	gnatsd.Setup()
-	if testLatency {
-		benchmark.Runner{gnatsd, gnatsd}.TestLatency(messageSize, messageCount)
-	} else {
-		benchmark.Runner{gnatsd, gnatsd}.TestThroughput(messageSize, messageCount)
-	}
-	gnatsd.Teardown()
-	log.Println("End gnatsd test")
-}
-
-func main() {
-	usage := fmt.Sprintf(
-		"usage: %s {inproc|zeromq|nanomsg|kestrel|kafka|rabbitmq|nsq|redis|activemq|gnatsd} [test_latency] [num_messages] [message_size]",
-		os.Args[0])
+func parseArgs(usage string) (string, bool, int, int) {
 
 	if len(os.Args) < 2 {
 		log.Print(usage)
@@ -184,28 +108,21 @@ func main() {
 		messageSize = size
 	}
 
-	if test == "inproc" {
-		runInproc(messageCount, messageSize, testLatency)
-	} else if test == "zeromq" {
-		runZeromq(messageCount, messageSize, testLatency)
-	} else if test == "nanomsg" {
-		runNanomsg(messageCount, messageSize, testLatency)
-	} else if test == "kestrel" {
-		runKestrel(messageCount, messageSize, testLatency)
-	} else if test == "kafka" {
-		runKafka(messageCount, messageSize, testLatency)
-	} else if test == "rabbitmq" {
-		runRabbitmq(messageCount, messageSize, testLatency)
-	} else if test == "nsq" {
-		runNsq(messageCount, messageSize, testLatency)
-	} else if test == "redis" {
-		runRedis(messageCount, messageSize, testLatency)
-	} else if test == "activemq" {
-		runActivemq(messageCount, messageSize, testLatency)
-	} else if test == "gnatsd" {
-		runGnatsd(messageCount, messageSize, testLatency)
-	} else {
-		log.Print(usage)
+	return test, testLatency, messageCount, messageSize
+}
+
+func main() {
+	usage := fmt.Sprintf(
+		"usage: %s "+
+			"{inproc|zeromq|nanomsg|kestrel|kafka|rabbitmq|nsq|redis|activemq|gnatsd} "+
+			"[test_latency] [num_messages] [message_size]",
+		os.Args[0])
+
+	tester := newTester(parseArgs(usage))
+	if tester == nil {
+		log.Println(usage)
 		os.Exit(1)
 	}
+
+	tester.Test()
 }
