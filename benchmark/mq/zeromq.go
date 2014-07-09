@@ -15,6 +15,8 @@ type Zeromq struct {
 
 func zeromqReceive(zeromq Zeromq) {
 	for {
+		// TODO: Some messages come back empty. Is this a slow-consumer problem?
+		// Should DONTWAIT be used?
 		message, _ := zeromq.receiver.RecvBytes(zmq4.DONTWAIT)
 		if zeromq.handler.ReceiveMessage(message) {
 			break
@@ -27,6 +29,8 @@ func NewZeromq(numberOfMessages int, testLatency bool) Zeromq {
 	pub, _ := ctx.NewSocket(zmq4.PUB)
 	pub.Bind("tcp://*:5555")
 	sub, _ := ctx.NewSocket(zmq4.SUB)
+	sub.SetSubscribe("")
+	sub.Connect("tcp://localhost:5555")
 
 	var handler benchmark.MessageHandler
 	if testLatency {
@@ -46,8 +50,7 @@ func NewZeromq(numberOfMessages int, testLatency bool) Zeromq {
 }
 
 func (zeromq Zeromq) Setup() {
-	zeromq.receiver.Connect("tcp://localhost:5555")
-	zeromq.receiver.SetSubscribe("")
+	// Sleep is needed to avoid race condition with receiving initial messages.
 	time.Sleep(3 * time.Second)
 	go zeromqReceive(zeromq)
 }
@@ -58,6 +61,7 @@ func (zeromq Zeromq) Teardown() {
 }
 
 func (zeromq Zeromq) Send(message []byte) {
+	// TODO: Should DONTWAIT be used? Possibly overloading consumer.
 	zeromq.sender.SendBytes(message, zmq4.DONTWAIT)
 }
 

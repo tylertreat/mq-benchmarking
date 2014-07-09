@@ -15,6 +15,8 @@ type Nanomsg struct {
 
 func nanoReceive(nano Nanomsg) {
 	for {
+		// TODO: Some messages come back empty. Is this a slow-consumer problem?
+		// Should DontWait be used?
 		message, _ := nano.receiver.Recv(nanomsg.DontWait)
 		if nano.handler.ReceiveMessage(message) {
 			break
@@ -47,6 +49,7 @@ func NewNanomsg(numberOfMessages int, testLatency bool) Nanomsg {
 }
 
 func (nano Nanomsg) Setup() {
+	// Sleep is needed to avoid race condition with receiving initial messages.
 	time.Sleep(3 * time.Second)
 	go nanoReceive(nano)
 }
@@ -57,6 +60,7 @@ func (nano Nanomsg) Teardown() {
 }
 
 func (nano Nanomsg) Send(message []byte) {
+	// TODO: Should DontWait be used? Possibly overloading consumer.
 	nano.sender.Send(message, nanomsg.DontWait)
 }
 
