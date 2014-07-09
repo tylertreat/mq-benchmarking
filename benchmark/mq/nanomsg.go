@@ -13,7 +13,7 @@ type Nanomsg struct {
 	receiver *nanomsg.SubSocket
 }
 
-func nanoReceive(nano Nanomsg) {
+func nanoReceive(nano *Nanomsg) {
 	for {
 		// TODO: Some messages come back empty. Is this a slow-consumer problem?
 		// Should DontWait be used?
@@ -24,7 +24,7 @@ func nanoReceive(nano Nanomsg) {
 	}
 }
 
-func NewNanomsg(numberOfMessages int, testLatency bool) Nanomsg {
+func NewNanomsg(numberOfMessages int, testLatency bool) *Nanomsg {
 	pub, _ := nanomsg.NewPubSocket()
 	pub.Bind("tcp://*:5555")
 	sub, _ := nanomsg.NewSubSocket()
@@ -41,29 +41,29 @@ func NewNanomsg(numberOfMessages int, testLatency bool) Nanomsg {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Nanomsg{
+	return &Nanomsg{
 		handler:  handler,
 		sender:   pub,
 		receiver: sub,
 	}
 }
 
-func (nano Nanomsg) Setup() {
+func (nano *Nanomsg) Setup() {
 	// Sleep is needed to avoid race condition with receiving initial messages.
 	time.Sleep(3 * time.Second)
 	go nanoReceive(nano)
 }
 
-func (nano Nanomsg) Teardown() {
+func (nano *Nanomsg) Teardown() {
 	nano.sender.Close()
 	nano.receiver.Close()
 }
 
-func (nano Nanomsg) Send(message []byte) {
+func (nano *Nanomsg) Send(message []byte) {
 	// TODO: Should DontWait be used? Possibly overloading consumer.
 	nano.sender.Send(message, nanomsg.DontWait)
 }
 
-func (nano Nanomsg) MessageHandler() *benchmark.MessageHandler {
+func (nano *Nanomsg) MessageHandler() *benchmark.MessageHandler {
 	return &nano.handler
 }

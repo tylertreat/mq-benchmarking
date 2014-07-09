@@ -89,7 +89,7 @@ func newConsumer(amqpUri, exchange, exchangeType, queueName, key, ctag string) (
 	return c, nil
 }
 
-func rabbitmqReceive(r Rabbitmq) {
+func rabbitmqReceive(r *Rabbitmq) {
 loop:
 	for {
 		deliveries, _ := r.sub.channel.Consume(
@@ -110,7 +110,7 @@ loop:
 	}
 }
 
-func NewRabbitmq(numberOfMessages int, testLatency bool) Rabbitmq {
+func NewRabbitmq(numberOfMessages int, testLatency bool) *Rabbitmq {
 	exchange := "test"
 	exchangeType := "direct"
 	uri := "amqp://guest:guest@localhost:5672"
@@ -142,7 +142,7 @@ func NewRabbitmq(numberOfMessages int, testLatency bool) Rabbitmq {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Rabbitmq{
+	return &Rabbitmq{
 		handler:  handler,
 		pub:      pub,
 		sub:      sub,
@@ -152,16 +152,16 @@ func NewRabbitmq(numberOfMessages int, testLatency bool) Rabbitmq {
 	}
 }
 
-func (r Rabbitmq) Setup() {
+func (r *Rabbitmq) Setup() {
 	go rabbitmqReceive(r)
 }
 
-func (r Rabbitmq) Teardown() {
+func (r *Rabbitmq) Teardown() {
 	r.pub.conn.Close()
 	r.sub.conn.Close()
 }
 
-func (r Rabbitmq) Send(message []byte) {
+func (r *Rabbitmq) Send(message []byte) {
 	r.pub.channel.Publish(
 		r.exchange,
 		r.key,
@@ -178,6 +178,6 @@ func (r Rabbitmq) Send(message []byte) {
 	)
 }
 
-func (r Rabbitmq) MessageHandler() *benchmark.MessageHandler {
+func (r *Rabbitmq) MessageHandler() *benchmark.MessageHandler {
 	return &r.handler
 }

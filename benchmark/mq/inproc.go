@@ -6,7 +6,7 @@ type Inproc struct {
 	handler benchmark.MessageHandler
 }
 
-func NewInproc(numberOfMessages int, testLatency bool) Inproc {
+func NewInproc(numberOfMessages int, testLatency bool) *Inproc {
 	var handler benchmark.MessageHandler
 	if testLatency {
 		handler = &benchmark.LatencyMessageHandler{
@@ -17,17 +17,17 @@ func NewInproc(numberOfMessages int, testLatency bool) Inproc {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Inproc{handler: handler}
+	return &Inproc{handler: handler}
 }
 
-func (inproc Inproc) Send(message []byte) {
+func (inproc *Inproc) Send(message []byte) {
 	inproc.handler.ReceiveMessage(message)
 }
 
-func (inproc Inproc) MessageHandler() *benchmark.MessageHandler {
+func (inproc *Inproc) MessageHandler() *benchmark.MessageHandler {
 	return &inproc.handler
 }
 
-func (inproc Inproc) Setup() {}
+func (inproc *Inproc) Setup() {}
 
-func (inproc Inproc) Teardown() {}
+func (inproc *Inproc) Teardown() {}

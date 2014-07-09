@@ -14,7 +14,7 @@ type Kafka struct {
 	topic     string
 }
 
-func kafkaReceive(k Kafka) {
+func kafkaReceive(k *Kafka) {
 	for {
 		event := <-k.sub.Events()
 		if k.handler.ReceiveMessage(event.Value) {
@@ -23,7 +23,7 @@ func kafkaReceive(k Kafka) {
 	}
 }
 
-func NewKafka(numberOfMessages int, testLatency bool) Kafka {
+func NewKafka(numberOfMessages int, testLatency bool) *Kafka {
 	pubClient, _ := sarama.NewClient("pub", []string{"localhost:9092"}, sarama.NewClientConfig())
 	subClient, _ := sarama.NewClient("sub", []string{"localhost:9092"}, sarama.NewClientConfig())
 
@@ -43,7 +43,7 @@ func NewKafka(numberOfMessages int, testLatency bool) Kafka {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Kafka{
+	return &Kafka{
 		handler:   handler,
 		pubClient: pubClient,
 		subClient: subClient,
@@ -53,21 +53,21 @@ func NewKafka(numberOfMessages int, testLatency bool) Kafka {
 	}
 }
 
-func (k Kafka) Setup() {
+func (k *Kafka) Setup() {
 	go kafkaReceive(k)
 }
 
-func (k Kafka) Teardown() {
+func (k *Kafka) Teardown() {
 	k.pub.Close()
 	k.sub.Close()
 	k.pubClient.Close()
 	k.subClient.Close()
 }
 
-func (k Kafka) Send(message []byte) {
+func (k *Kafka) Send(message []byte) {
 	k.pub.SendMessage(k.topic, nil, sarama.StringEncoder(message))
 }
 
-func (k Kafka) MessageHandler() *benchmark.MessageHandler {
+func (k *Kafka) MessageHandler() *benchmark.MessageHandler {
 	return &k.handler
 }

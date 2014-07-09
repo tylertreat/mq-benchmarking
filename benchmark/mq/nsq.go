@@ -13,7 +13,7 @@ type Nsq struct {
 	channel string
 }
 
-func NewNsq(numberOfMessages int, testLatency bool) Nsq {
+func NewNsq(numberOfMessages int, testLatency bool) *Nsq {
 	topic := "test"
 	channel := "test"
 	pub, _ := nsq.NewProducer("localhost:4150", nsq.NewConfig())
@@ -29,7 +29,7 @@ func NewNsq(numberOfMessages int, testLatency bool) Nsq {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Nsq{
+	return &Nsq{
 		handler: handler,
 		pub:     pub,
 		sub:     sub,
@@ -38,7 +38,7 @@ func NewNsq(numberOfMessages int, testLatency bool) Nsq {
 	}
 }
 
-func (n Nsq) Setup() {
+func (n *Nsq) Setup() {
 	n.sub.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
 		n.handler.ReceiveMessage(message.Body)
 		return nil
@@ -46,15 +46,15 @@ func (n Nsq) Setup() {
 	n.sub.ConnectToNSQD("localhost:4150")
 }
 
-func (n Nsq) Teardown() {
+func (n *Nsq) Teardown() {
 	n.sub.Stop()
 	n.pub.Stop()
 }
 
-func (n Nsq) Send(message []byte) {
+func (n *Nsq) Send(message []byte) {
 	n.pub.Publish(n.topic, message)
 }
 
-func (n Nsq) MessageHandler() *benchmark.MessageHandler {
+func (n *Nsq) MessageHandler() *benchmark.MessageHandler {
 	return &n.handler
 }

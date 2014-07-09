@@ -12,7 +12,7 @@ type Kestrel struct {
 	sub     *kestrel.Client
 }
 
-func kestrelReceive(k Kestrel) {
+func kestrelReceive(k *Kestrel) {
 	for {
 		message, _ := k.sub.Get(k.queue, 1, 0, 0)
 		if len(message) > 0 {
@@ -23,7 +23,7 @@ func kestrelReceive(k Kestrel) {
 	}
 }
 
-func NewKestrel(numberOfMessages int, testLatency bool) Kestrel {
+func NewKestrel(numberOfMessages int, testLatency bool) *Kestrel {
 	pub := kestrel.NewClient("localhost", 2229)
 	sub := kestrel.NewClient("localhost", 2229)
 
@@ -37,7 +37,7 @@ func NewKestrel(numberOfMessages int, testLatency bool) Kestrel {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Kestrel{
+	return &Kestrel{
 		handler: handler,
 		queue:   "transient_events",
 		pub:     pub,
@@ -45,20 +45,20 @@ func NewKestrel(numberOfMessages int, testLatency bool) Kestrel {
 	}
 }
 
-func (k Kestrel) Setup() {
+func (k *Kestrel) Setup() {
 	k.pub.FlushAllQueues()
 	go kestrelReceive(k)
 }
 
-func (k Kestrel) Teardown() {
+func (k *Kestrel) Teardown() {
 	k.pub.Close()
 	k.sub.Close()
 }
 
-func (k Kestrel) Send(message []byte) {
+func (k *Kestrel) Send(message []byte) {
 	k.pub.Put(k.queue, [][]byte{message})
 }
 
-func (k Kestrel) MessageHandler() *benchmark.MessageHandler {
+func (k *Kestrel) MessageHandler() *benchmark.MessageHandler {
 	return &k.handler
 }

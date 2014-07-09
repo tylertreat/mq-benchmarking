@@ -13,7 +13,7 @@ type Activemq struct {
 	queue   string
 }
 
-func activemqReceive(a Activemq) {
+func activemqReceive(a *Activemq) {
 	for {
 		message := <-a.sub.C
 		if a.handler.ReceiveMessage(message.Body) {
@@ -22,7 +22,7 @@ func activemqReceive(a Activemq) {
 	}
 }
 
-func NewActivemq(numberOfMessages int, testLatency bool) Activemq {
+func NewActivemq(numberOfMessages int, testLatency bool) *Activemq {
 	queue := "test"
 	pub, _ := stomp.Dial("tcp", "localhost:61613", stomp.Options{})
 	subConn, _ := stomp.Dial("tcp", "localhost:61613", stomp.Options{})
@@ -38,7 +38,7 @@ func NewActivemq(numberOfMessages int, testLatency bool) Activemq {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Activemq{
+	return &Activemq{
 		handler: handler,
 		queue:   queue,
 		pub:     pub,
@@ -47,19 +47,19 @@ func NewActivemq(numberOfMessages int, testLatency bool) Activemq {
 	}
 }
 
-func (a Activemq) Setup() {
+func (a *Activemq) Setup() {
 	go activemqReceive(a)
 }
 
-func (a Activemq) Teardown() {
+func (a *Activemq) Teardown() {
 	a.pub.Disconnect()
 	a.subConn.Disconnect()
 }
 
-func (a Activemq) Send(message []byte) {
+func (a *Activemq) Send(message []byte) {
 	a.pub.Send(a.queue, "", message, nil)
 }
 
-func (a Activemq) MessageHandler() *benchmark.MessageHandler {
+func (a *Activemq) MessageHandler() *benchmark.MessageHandler {
 	return &a.handler
 }

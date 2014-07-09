@@ -12,7 +12,7 @@ type Redis struct {
 	channel string
 }
 
-func redisReceive(r Redis) {
+func redisReceive(r *Redis) {
 	for {
 		switch v := r.sub.Receive().(type) {
 		case redis.Message:
@@ -23,7 +23,7 @@ func redisReceive(r Redis) {
 	}
 }
 
-func NewRedis(numberOfMessages int, testLatency bool) Redis {
+func NewRedis(numberOfMessages int, testLatency bool) *Redis {
 	channel := "test"
 	pub, _ := redis.Dial("tcp", ":6379")
 	subConn, _ := redis.Dial("tcp", ":6379")
@@ -40,7 +40,7 @@ func NewRedis(numberOfMessages int, testLatency bool) Redis {
 		handler = &benchmark.ThroughputMessageHandler{NumberOfMessages: numberOfMessages}
 	}
 
-	return Redis{
+	return &Redis{
 		handler: handler,
 		pub:     pub,
 		sub:     sub,
@@ -48,20 +48,20 @@ func NewRedis(numberOfMessages int, testLatency bool) Redis {
 	}
 }
 
-func (r Redis) Setup() {
+func (r *Redis) Setup() {
 	go redisReceive(r)
 }
 
-func (r Redis) Teardown() {
+func (r *Redis) Teardown() {
 	r.pub.Close()
 	r.sub.Close()
 }
 
-func (r Redis) Send(message []byte) {
+func (r *Redis) Send(message []byte) {
 	r.pub.Send("PUBLISH", r.channel, message)
 	r.pub.Flush()
 }
 
-func (r Redis) MessageHandler() *benchmark.MessageHandler {
+func (r *Redis) MessageHandler() *benchmark.MessageHandler {
 	return &r.handler
 }
