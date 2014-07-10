@@ -27,7 +27,12 @@ func NewReceiveEndpoint(receiver MessageReceiver, numberOfMessages int) *Receive
 }
 
 type MessageHandler interface {
+	// Process a received message. Return true if it's the last message, otherwise
+	// return false.
 	ReceiveMessage([]byte) bool
+
+	// Indicate whether the handler has been marked complete, meaning all messages
+	// have been received.
 	HasCompleted() bool
 }
 
@@ -51,6 +56,9 @@ func (handler *ThroughputMessageHandler) HasCompleted() bool {
 	return handler.hasCompleted
 }
 
+// Increment a message counter. If this is the first message, set the started timestamp.
+// If it's the last message, set the stopped timestamp and compute the total runtime
+// and print it out. Return true if it's the last message, otherwise return false.
 func (handler *ThroughputMessageHandler) ReceiveMessage(message []byte) bool {
 	if !handler.hasStarted {
 		handler.hasStarted = true
@@ -75,6 +83,9 @@ func (handler *LatencyMessageHandler) HasCompleted() bool {
 	return handler.hasCompleted
 }
 
+// Record each message's latency. The message contains the timestamp when it was sent.
+// If it's the last message, compute the average latency and print it out. Return true
+// if the message is the last one, otherwise return false.
 func (handler *LatencyMessageHandler) ReceiveMessage(message []byte) bool {
 	now := time.Now().UnixNano()
 	then, _ := binary.Varint(message)
