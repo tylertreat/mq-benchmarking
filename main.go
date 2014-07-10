@@ -55,6 +55,10 @@ func newTester(subject string, testLatency bool, msgCount, msgSize int) *benchma
 		gnatsd := mq.NewGnatsd(msgCount, testLatency)
 		messageSender = gnatsd
 		messageReceiver = gnatsd
+	case "beanstalkd":
+		beanstalkd := mq.NewBeanstalkd(msgCount, testLatency)
+		messageSender = beanstalkd
+		messageReceiver = beanstalkd
 	default:
 		return nil
 	}
@@ -114,7 +118,19 @@ func parseArgs(usage string) (string, bool, int, int) {
 func main() {
 	usage := fmt.Sprintf(
 		"usage: %s "+
-			"{inproc|zeromq|nanomsg|kestrel|kafka|rabbitmq|nsq|redis|activemq|nats} "+
+			"{"+
+			"inproc|"+
+			"zeromq|"+
+			"nanomsg|"+
+			"kestrel|"+
+			"kafka|"+
+			"rabbitmq|"+
+			"nsq|"+
+			"redis|"+
+			"activemq|"+
+			"nats|"+
+			"beanstalkd"+
+			"} "+
 			"[test_latency] [num_messages] [message_size]",
 		os.Args[0])
 
