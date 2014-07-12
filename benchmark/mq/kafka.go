@@ -65,7 +65,7 @@ func (k *Kafka) Teardown() {
 }
 
 func (k *Kafka) Send(message []byte) {
-	k.pub.SendMessage(k.topic, nil, sarama.StringEncoder(message))
+	k.pub.SendMessage(k.topic, nil, sarama.ByteEncoder(message))
 }
 
 func (k *Kafka) MessageHandler() *benchmark.MessageHandler {
