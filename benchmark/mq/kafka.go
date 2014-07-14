@@ -36,6 +36,7 @@ func NewKafka(numberOfMessages int, testLatency bool) *Kafka {
 	pub, _ := sarama.NewProducer(pubClient, sarama.NewProducerConfig())
 	consumerConfig := sarama.NewConsumerConfig()
 	consumerConfig.OffsetMethod = sarama.OffsetMethodNewest // Only read new messages
+	consumerConfig.DefaultFetchSize = 10 * 1024 * 1024
 	sub, _ := sarama.NewConsumer(subClient, topic, 0, "test", consumerConfig)
 
 	var handler benchmark.MessageHandler
