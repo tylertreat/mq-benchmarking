@@ -23,6 +23,11 @@ func kafkaReceive(k *Kafka) {
 	}
 }
 
+func kafkaAsyncErrors(k *Kafka) {
+	for _ = range k.pub.Errors() {
+	}
+}
+
 func NewKafka(numberOfMessages int, testLatency bool) *Kafka {
 	pubClient, _ := sarama.NewClient("pub", []string{"localhost:9092"}, sarama.NewClientConfig())
 	subClient, _ := sarama.NewClient("sub", []string{"localhost:9092"}, sarama.NewClientConfig())
@@ -31,6 +36,7 @@ func NewKafka(numberOfMessages int, testLatency bool) *Kafka {
 	pub, _ := sarama.NewProducer(pubClient, sarama.NewProducerConfig())
 	consumerConfig := sarama.NewConsumerConfig()
 	consumerConfig.OffsetMethod = sarama.OffsetMethodNewest // Only read new messages
+	consumerConfig.DefaultFetchSize = 10 * 1024 * 1024
 	sub, _ := sarama.NewConsumer(subClient, topic, 0, "test", consumerConfig)
 
 	var handler benchmark.MessageHandler
@@ -55,6 +61,7 @@ func NewKafka(numberOfMessages int, testLatency bool) *Kafka {
 
 func (k *Kafka) Setup() {
 	go kafkaReceive(k)
+	go kafkaAsyncErrors(k)
 }
 
 func (k *Kafka) Teardown() {
@@ -65,7 +72,7 @@ func (k *Kafka) Teardown() {
 }
 
 func (k *Kafka) Send(message []byte) {
-	k.pub.SendMessage(k.topic, nil, sarama.StringEncoder(message))
+	k.pub.QueueMessage(k.topic, nil, sarama.ByteEncoder(message))
 }
 
 func (k *Kafka) MessageHandler() *benchmark.MessageHandler {
