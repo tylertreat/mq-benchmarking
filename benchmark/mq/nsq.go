@@ -52,7 +52,7 @@ func (n *Nsq) Teardown() {
 }
 
 func (n *Nsq) Send(message []byte) {
-	n.pub.Publish(n.topic, message)
+	n.pub.PublishAsync(n.topic, message, nil)
 }
 
 func (n *Nsq) MessageHandler() *benchmark.MessageHandler {
