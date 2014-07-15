@@ -59,6 +59,10 @@ func newTester(subject string, testLatency bool, msgCount, msgSize int) *benchma
 		beanstalkd := mq.NewBeanstalkd(msgCount, testLatency)
 		messageSender = beanstalkd
 		messageReceiver = beanstalkd
+	case "iris":
+		iris := mq.NewIris(msgCount, testLatency)
+		messageSender = iris
+		messageReceiver = iris
 	default:
 		return nil
 	}
@@ -129,7 +133,8 @@ func main() {
 			"redis|"+
 			"activemq|"+
 			"nats|"+
-			"beanstalkd"+
+			"beanstalkd|"+
+			"iris"+
 			"} "+
 			"[test_latency] [num_messages] [message_size]",
 		os.Args[0])
