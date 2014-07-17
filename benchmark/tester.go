@@ -14,6 +14,7 @@ type Tester struct {
 func (tester Tester) Test() {
 	log.Printf("Begin %s test", tester.Name)
 	tester.Setup()
+	defer tester.Teardown()
 
 	if tester.TestLatency {
 		tester.testLatency()
@@ -21,7 +22,6 @@ func (tester Tester) Test() {
 		tester.testThroughput()
 	}
 
-	tester.Teardown()
 	log.Printf("End %s test", tester.Name)
 }
 
