@@ -3,6 +3,7 @@ package benchmark
 import (
 	"encoding/binary"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -43,6 +44,7 @@ type ThroughputMessageHandler struct {
 	NumberOfMessages int
 	started          int64
 	stopped          int64
+	completionLock   sync.Mutex
 }
 
 type LatencyMessageHandler struct {
@@ -50,9 +52,12 @@ type LatencyMessageHandler struct {
 	Latencies        []float32
 	messageCounter   int
 	hasCompleted     bool
+	completionLock   sync.Mutex
 }
 
 func (handler *ThroughputMessageHandler) HasCompleted() bool {
+	handler.completionLock.Lock()
+	defer handler.completionLock.Unlock()
 	return handler.hasCompleted
 }
 
@@ -69,10 +74,14 @@ func (handler *ThroughputMessageHandler) ReceiveMessage(message []byte) bool {
 
 	if handler.messageCounter == handler.NumberOfMessages {
 		handler.stopped = time.Now().UnixNano()
-		handler.hasCompleted = true
 		ms := float32(handler.stopped-handler.started) / 1000000.0
 		log.Printf("Received %d messages in %f ms\n", handler.NumberOfMessages, ms)
 		log.Printf("Received %f per second\n", 1000*float32(handler.NumberOfMessages)/ms)
+
+		handler.completionLock.Lock()
+		handler.hasCompleted = true
+		handler.completionLock.Unlock()
+
 		return true
 	}
 
@@ -80,6 +89,8 @@ func (handler *ThroughputMessageHandler) ReceiveMessage(message []byte) bool {
 }
 
 func (handler *LatencyMessageHandler) HasCompleted() bool {
+	handler.completionLock.Lock()
+	defer handler.completionLock.Unlock()
 	return handler.hasCompleted
 }
 
@@ -97,7 +108,6 @@ func (handler *LatencyMessageHandler) ReceiveMessage(message []byte) bool {
 
 	handler.messageCounter++
 	if handler.messageCounter == handler.NumberOfMessages {
-		handler.hasCompleted = true
 		sum := float32(0)
 		for _, latency := range handler.Latencies {
 			sum += latency
@@ -105,6 +115,11 @@ func (handler *LatencyMessageHandler) ReceiveMessage(message []byte) bool {
 		avgLatency := float32(sum) / float32(len(handler.Latencies))
 		log.Printf("Mean latency for %d messages: %f ms\n", handler.NumberOfMessages,
 			avgLatency)
+
+		handler.completionLock.Lock()
+		handler.hasCompleted = true
+		handler.completionLock.Unlock()
+
 		return true
 	}
 
