@@ -53,6 +53,7 @@ func NewIris(numberOfMessages int, testLatency bool) *Iris {
 func (i *Iris) Setup() {}
 
 func (i *Iris) Teardown() {
+	i.sub.Unsubscribe(i.topic)
 	i.pub.Close()
 	i.sub.Close()
 }
