@@ -63,6 +63,10 @@ func newTester(subject string, testLatency bool, msgCount, msgSize int) *benchma
 		iris := mq.NewIris(msgCount, testLatency)
 		messageSender = iris
 		messageReceiver = iris
+	case "surge":
+		surge := mq.NewSurgeMQ(msgCount, testLatency)
+		messageSender = surge
+		messageReceiver = surge
 	default:
 		return nil
 	}
