@@ -1,7 +1,7 @@
 mq-benchmarking
 ==========================
 
-**Deprecated:** Use [Flotilla](https://github.com/tylertreat/Flotilla) for running benchmarks.
+**Deprecated:** Use [Flotilla](https://github.com/tylertreat/Flotilla) for running benchmarks. See related [blog post](http://www.bravenewgeek.com/benchmark-responsibly/) for more information.
 
 Results: http://www.bravenewgeek.com/dissecting-message-queues/
 ___
