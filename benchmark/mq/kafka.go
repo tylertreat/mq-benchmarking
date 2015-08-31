@@ -6,18 +6,17 @@ import (
 )
 
 type Kafka struct {
-	handler   benchmark.MessageHandler
-	pubClient *sarama.Client
-	subClient *sarama.Client
-	pub       *sarama.Producer
-	sub       *sarama.Consumer
-	topic     string
+	handler benchmark.MessageHandler
+	client  sarama.Client
+	pub     sarama.AsyncProducer
+	sub     sarama.PartitionConsumer
+	topic   string
 }
 
 func kafkaReceive(k *Kafka) {
 	for {
-		event := <-k.sub.Events()
-		if k.handler.ReceiveMessage(event.Value) {
+		msg := <-k.sub.Messages()
+		if k.handler.ReceiveMessage(msg.Value) {
 			break
 		}
 	}
@@ -29,15 +28,13 @@ func kafkaAsyncErrors(k *Kafka) {
 }
 
 func NewKafka(numberOfMessages int, testLatency bool) *Kafka {
-	pubClient, _ := sarama.NewClient("pub", []string{"localhost:9092"}, sarama.NewClientConfig())
-	subClient, _ := sarama.NewClient("sub", []string{"localhost:9092"}, sarama.NewClientConfig())
+	config := sarama.NewConfig()
+	client, _ := sarama.NewClient([]string{"localhost:9092"}, config)
 
 	topic := "test"
-	pub, _ := sarama.NewProducer(pubClient, sarama.NewProducerConfig())
-	consumerConfig := sarama.NewConsumerConfig()
-	consumerConfig.OffsetMethod = sarama.OffsetMethodNewest // Only read new messages
-	consumerConfig.DefaultFetchSize = 10 * 1024 * 1024
-	sub, _ := sarama.NewConsumer(subClient, topic, 0, "test", consumerConfig)
+	pub, _ := sarama.NewAsyncProducer([]string{"localhost:9092"}, config)
+	consumer, _ := sarama.NewConsumerFromClient(client)
+	sub, _ := consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 
 	var handler benchmark.MessageHandler
 	if testLatency {
@@ -50,12 +47,11 @@ func NewKafka(numberOfMessages int, testLatency bool) *Kafka {
 	}
 
 	return &Kafka{
-		handler:   handler,
-		pubClient: pubClient,
-		subClient: subClient,
-		pub:       pub,
-		sub:       sub,
-		topic:     topic,
+		handler: handler,
+		client:  client,
+		pub:     pub,
+		sub:     sub,
+		topic:   topic,
 	}
 }
 
@@ -67,12 +63,15 @@ func (k *Kafka) Setup() {
 func (k *Kafka) Teardown() {
 	k.pub.Close()
 	k.sub.Close()
-	k.pubClient.Close()
-	k.subClient.Close()
+	k.client.Close()
 }
 
 func (k *Kafka) Send(message []byte) {
-	k.pub.QueueMessage(k.topic, nil, sarama.ByteEncoder(message))
+	k.pub.Input() <- &sarama.ProducerMessage{
+		Topic: k.topic,
+		Key:   nil,
+		Value: sarama.ByteEncoder(message),
+	}
 }
 
 func (k *Kafka) MessageHandler() *benchmark.MessageHandler {

@@ -1,11 +1,9 @@
 package mq
 
 import (
-	"github.com/surge/surgemq/auth"
-	"github.com/surge/surgemq/message"
 	"github.com/surge/surgemq/service"
-	"github.com/surge/surgemq/sessions"
-	"github.com/surge/surgemq/topics"
+
+	"github.com/surgemq/message"
 	"github.com/tylertreat/mq-benchmarking/benchmark"
 )
 
@@ -18,6 +16,7 @@ type SurgeMQ struct {
 
 func NewSurgeMQ(numberOfMessages int, testLatency bool) *SurgeMQ {
 	uri := "tcp://127.0.0.1:1883"
+	client := &service.Client{}
 
 	msg := message.NewConnectMessage()
 	msg.SetWillQos(1)
@@ -30,15 +29,7 @@ func NewSurgeMQ(numberOfMessages int, testLatency bool) *SurgeMQ {
 	msg.SetUsername([]byte("surgemq"))
 	msg.SetPassword([]byte("verysecret"))
 
-	c, err := service.Connect(service.Context{
-		KeepAlive:      service.DefaultKeepAlive,
-		ConnectTimeout: service.DefaultConnectTimeout,
-		AckTimeout:     service.DefaultAckTimeout,
-		TimeoutRetries: service.DefaultTimeoutRetries,
-		Auth:           auth.MockSuccessAuthenticator,
-		Topics:         topics.NewMemTopics(),
-		Store:          sessions.NewMemStore(),
-	}, uri, msg)
+	err := client.Connect(uri, msg)
 
 	if err != nil {
 		panic(err)
@@ -57,7 +48,7 @@ func NewSurgeMQ(numberOfMessages int, testLatency bool) *SurgeMQ {
 	return &SurgeMQ{
 		handler:     handler,
 		subject:     "test",
-		client:      c,
+		client:      client,
 		testLatency: testLatency,
 	}
 }
